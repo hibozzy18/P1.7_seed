@@ -1,4 +1,4 @@
-# P1.5 - Advanced numerical techniques and libraries for linear algebra computations #
+# P1.7 - Advanced numerical techniques and libraries for linear algebra computations #
 
 ## Lecturer: Piotr Luszczek ##
 
