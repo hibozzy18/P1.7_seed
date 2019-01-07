@@ -13,7 +13,7 @@ matrix_multiply(double *C, double *A, double *B) {
     for (j = 0; j < N; ++j) {
       C[i + j*N] = 0.0;
       for (k = 0; k < N; ++k)
-        C[i + j*N] += A[i*N + k] * B[k*N + i];
+        C[i + j*N] += A[i*N + k] * B[k*N + j];
     }
 }
 
