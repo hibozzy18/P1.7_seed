@@ -30,6 +30,8 @@ along.
 
 ### Daily Lecture Schedule ###
 
+Slides available at http://www.icl.utk.edu/~luszczek/teaching/courses/2019/mhpc/
+
 #### Monday, January 7, 2019 ####
 
 * Morning module 1: HPC Hardware for Numerical Linear Algebra Software
