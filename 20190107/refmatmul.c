@@ -32,7 +32,7 @@ main(void) {
   matrix_multiply(C, A, B);
   t += omp_get_wtime();
 
-  printf("%d %g us %g flop/s\n", N, t, 2.0*N*N*N/t);
+  printf("%d %g %g flop/s\n", N, t, 2.0*N*N*N/t);
 
   return 0;
 }
