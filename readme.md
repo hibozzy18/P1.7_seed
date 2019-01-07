@@ -73,10 +73,10 @@ from each day should be in its own directory (20190107, 20190108, and so on).
 In each directory, there should be a Makefile that compiles your code. The
 Makefile should allow to change the compiler and compilation flags:
 ``make CC=cc CFLAGS=-fopenmp``.  The data from your runs should be in ``data``
-directory.  Please use SI prefixes for your results, data, and graphs. Avoid
-using large number of zeros and consider using a logarithmic scale as
-appropriate. Your reports should use a simple text format with references
-to figures in the ``data`` directory as necessary.
+directory.  Please use SI prefixes (M, G, T) for your results, data, and
+graphs. Avoid using large number of zeros and consider using a logarithmic
+scale as appropriate. Your reports should use a simple text format with
+references to figures in the ``data`` directory as necessary.
 
 #### Monday, January 7, 2019 ####
 
@@ -84,9 +84,9 @@ Implement square matrix multiplication code (you can port it from CUDA if you
 have it) using OpenMP directives. You don't have to get the best time but you
 have to use multiple OpenMP threads.  Report the time for running your OpenMP
 implementation on all cores of a single node of the cluster.  Use matrices of
-sizes from 500 to 3000 with step of 500. Also report the associated performance
-rate as 2\*N\*N\*N/time where N is the size of all 3 square matrices A, B, and
-C.
+sizes from 500 to 3000 with step of 500 (N=500,1000,1500,2000,2500,3000). Also
+report the associated performance rate as 2\*N\*N\*N/time where N is the size
+of all 3 square matrices A, B, and C.
 
 #### Tuesday, January 8, 2019 ####
 
