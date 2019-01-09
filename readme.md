@@ -109,6 +109,9 @@ lecture.
 
 Measure performance of matrix multiplication from PLASMA for square matrices
 and report it in Gflop/s for a range of matrix sizes between 500 and 3000.
+Note that on Ulyses cluster there is an older version of PLASMA installed as a
+module. It uses QUARK, not OpenMP, and the syntax for the function calls is
+slightly different than what the lecture slides show.
 
 #### Thursday, January 10, 2019 ####
 
