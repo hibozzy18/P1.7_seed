@@ -142,6 +142,26 @@ functions](http://icl.cs.utk.edu/projectsfiles/magma/doxygen/group__magma__init.
 
 #### Friday, January 11, 2019 ####
 
+Measure performance of cublasDgemm() for suqare matrices of size 100, 200, 300,
+..., 2000 (when testing and debuggin your code, use smaller sizes to keep the
+utilization of the cluster low.) Use cublasSetStream() to change the stream for
+CUBLAS and try more than one stream for submitting your calls. Find the number
+of streams for which you don't get improvement in performance for at least one
+problem size. Note that it is possible that only one cublasDgemm() can run on
+one stream but it is also possible that you could be able to have multiple
+cublasDgemm() run on separate streams and utilize the GPU better. Your results
+may vary from your peers depending on how you write your code so you don't have
+to get the same answer as the rest of the group. You should be guided by the
+performance results that you achieve.
+
+Your performance number in Gflop/s is `2e-9 * N*N*N / time` when running
+cublasDgemm() on a single stream. For two streams running cublasDgemm()
+simultaneously, it is `2 * 2e-9 * N*N*N / time_for_two_calls` and so on.
+
+Use `event_timer.cu` for measuring time of executing a kernel inside a stream
+(second argument to cudaEvenRecord is the stream pointer and passing 0 means
+the default NULL stream).
+
 #### Due Dates and Grading ####
 
 All assignments are due on Friday, January 18, 2019 at 20:00 Trieste time zone.
