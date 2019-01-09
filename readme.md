@@ -116,7 +116,7 @@ slightly different than what the lecture slides show.
 #### Thursday, January 10, 2019 ####
 
 Measure performance of `magma_dgemm()` for square matrices and report it in
-Tflop/s for a large (but no more than 5000) and a small (not less than 500)
+Gflop/s for a large (but no more than 5000) and a small (not less than 500)
 matrix size. The call that you make in your code will look like this:
 
     magma_dgemm(MagmaNoTrans, MagmaNoTrans, N, N, N, -1.0, A_dev, N, B_dev, N, 1.0, C_dev, N, (magma_queue_t)queue );
