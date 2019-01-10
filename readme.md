@@ -74,11 +74,11 @@ Your code needs to adhere to basic organization to facilitate grading. The code
 from each day should be in its own directory (20190107, 20190108, and so on).
 In each directory, there should be a Makefile that compiles your code. The
 Makefile should allow to change the compiler and compilation flags:
-``make CC=cc CFLAGS=-fopenmp``.  The data from your runs should be in ``data``
+`make CC=cc CFLAGS=-fopenmp`.  The data from your runs should be in `data`
 directory.  Please use SI prefixes (M, G, T) for your results, data, and
 graphs. Avoid using large number of zeros and consider using a logarithmic
 scale as appropriate. Your reports should use a simple text format with
-references to figures in the ``data`` directory as necessary.
+references to figures in the `data` directory as necessary.
 
 #### Monday, January 7, 2019 ####
 
@@ -94,7 +94,7 @@ of all 3 square matrices A, B, and C.
 
 Your code should create three arrays: multiply two of them together with
 "mulArray" and add the result to the third array with "addArray":
-``D[i]=A[i]\*B[i] + C[i]``. All the calculations should be made on the GPU. The
+`D[i]=A[i]*B[i] + C[i]`. All the calculations should be made on the GPU. The
 inputs should be copied from the CPU. The result D should be copied back to the
 CPU. The intermediate result E[i]=A[i]\*B[i] should also be copied to the CPU.
 You will need to use at least two streams and all your data transfers have to
@@ -109,11 +109,14 @@ lecture.
 
 Measure performance of matrix multiplication from PLASMA for square matrices
 and report it in Gflop/s for a range of matrix sizes between 500 and 3000.
+Note that on Ulyses cluster there is an older version of PLASMA installed as a
+module. It uses QUARK, not OpenMP, and the syntax for the function calls is
+slightly different than what the lecture slides show.
 
 #### Thursday, January 10, 2019 ####
 
 Measure performance of `magma_dgemm()` for square matrices and report it in
-Tflop/s for a large (but no more than 5000) and a small (not less than 500)
+Gflop/s for a large (but no more than 5000) and a small (not less than 500)
 matrix size. The call that you make in your code will look like this:
 
     magma_dgemm(MagmaNoTrans, MagmaNoTrans, N, N, N, -1.0, A_dev, N, B_dev, N, 1.0, C_dev, N, (magma_queue_t)queue );
@@ -141,6 +144,26 @@ functions](http://icl.cs.utk.edu/projectsfiles/magma/doxygen/group__magma__init.
 "MAGMA initialization and finalization").
 
 #### Friday, January 11, 2019 ####
+
+Measure performance of cublasDgemm() for suqare matrices of size 100, 200, 300,
+..., 2000 (when testing and debuggin your code, use smaller sizes to keep the
+utilization of the cluster low.) Use cublasSetStream() to change the stream for
+CUBLAS and try more than one stream for submitting your calls. Find the number
+of streams for which you don't get improvement in performance for at least one
+problem size. Note that it is possible that only one cublasDgemm() can run on
+one stream but it is also possible that you could be able to have multiple
+cublasDgemm() run on separate streams and utilize the GPU better. Your results
+may vary from your peers depending on how you write your code so you don't have
+to get the same answer as the rest of the group. You should be guided by the
+performance results that you achieve.
+
+Your performance number in Gflop/s is `2e-9 * N*N*N / time` when running
+cublasDgemm() on a single stream. For two streams running cublasDgemm()
+simultaneously, it is `2 * 2e-9 * N*N*N / time_for_two_calls` and so on.
+
+Use `event_timer.cu` for measuring time of executing a kernel inside a stream
+(second argument to cudaEvenRecord is the stream pointer and passing 0 means
+the default NULL stream).
 
 #### Due Dates and Grading ####
 
