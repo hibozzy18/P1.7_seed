@@ -52,7 +52,6 @@ int main(int argc, char *argv[])
     cudaEventCreateWithFlags(&e2, cudaEventDisableTiming);
     cudaEventCreateWithFlags(&e3, cudaEventDisableTiming);
     
-
     //Allocate GPU memory 
     cudaMalloc((void**)&d_A, size * sizeof(double));
     cudaMalloc((void**)&d_B, size * sizeof(double));

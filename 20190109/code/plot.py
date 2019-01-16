@@ -1,6 +1,8 @@
-from matplotlib import pyplot as plt
 import matplotlib
 matplotlib.use("TkAgg")
+from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt2
+import numpy as np
 
 n, t, f = [], [], []
 
@@ -13,14 +15,15 @@ def get_cols(filename):
         for line in f:
             values = [float(s) for s in line.split()]
             n.append(values[0])
-            t.append(values[2])
-            flot.append(values[3])
+            t.append(values[1])
+            flot.append(values[2])
     return n, t, flot
 
-
 def plot_time(n,  t, plt1, output):
-    plt1.subplot(121)
-    plt1.plot(n, t, '-b', label='Time/us')
+    plt1.subplot(111)
+   # plt1.plot(n, t, '-b', label='Time/us')
+    err = 0.1 + 0.2*np.sqrt(t)
+    plt1.errorbar(n, t, yerr=err,label='Time/us')
     plt1.suptitle("Time")
     plt1.legend()
     plt1.xlabel('N')
@@ -28,9 +31,11 @@ def plot_time(n,  t, plt1, output):
     plt.tight_layout()
     plt1.savefig(output)
 
-
+n, t, f = get_cols('../data/time.dat')
+plot_time(n, t, plt, '../img/time.png')
+    
 def plot_pperfomance(n,  t, plt1, output):
-    plt1.subplot(122)
+    plt1.subplot(111)
     plt1.plot(n, t, '-r', label='Peak Performance')
     plt1.suptitle("Peak Perfomance")
     plt1.legend()
@@ -38,8 +43,6 @@ def plot_pperfomance(n,  t, plt1, output):
     plt1.ylabel('Gflops/s')
     plt.tight_layout()
     plt1.savefig(output)
+    
 
-
-n, t, f = get_cols('../data/time.dat')
-plot_time(n, t, plt, '../img/time.png')
-plot_pperfomance(n, f, plt, '../img/time.png')
+plot_pperfomance(n, f, plt2, '../img/time2.png')

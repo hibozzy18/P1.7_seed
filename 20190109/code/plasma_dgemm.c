@@ -12,7 +12,6 @@ int main(int argc, char * argv[])
     }
 
     int N = atoi(argv[1]); 
-
     double *A, *B,*C, t;
 
     A = (double *)malloc(N * N * sizeof(double));

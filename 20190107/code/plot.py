@@ -3,8 +3,8 @@ import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib import pyplot as plt
 
-n, t, f= [], [], []
 
+n, t, f= [], [], []
 
 def get_cols(filename):
     """
@@ -19,7 +19,8 @@ def get_cols(filename):
     return n, t, flot
 
 def plot_time(n,  t, plt1 , output):
-    plt1.subplot(121)
+    plt1.figure(1, clear=True)
+    plt1.subplot()
     plt1.plot(n, t, '-b', label='Time/us')
     plt1.suptitle("Time")
     plt1.legend()
@@ -30,7 +31,8 @@ def plot_time(n,  t, plt1 , output):
 
 
 def plot_pperfomance(n,  t, plt1, output):
-    plt1.subplot(122)
+    plt1.figure(2, clear=True)
+    plt1.subplot()
     plt1.plot(n, t, '-r', label='Peak Performance')
     plt1.suptitle("Peak Perfomance")
     plt1.legend()
@@ -44,4 +46,4 @@ def plot_pperfomance(n,  t, plt1, output):
 
 n,t,f = get_cols('../data/time.dat')
 plot_time(n, t, plt, '../img/time.png')
-plot_pperfomance(n, f, plt, '../img/time.png')
+plot_pperfomance(n, f, plt, '../img/time2.png')
