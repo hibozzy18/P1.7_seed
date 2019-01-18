@@ -24,8 +24,7 @@ int main(int argc, char const *argv[])
     cudaEventCreate(&stop);
     
     //allocate CPU memory
-    double *A, *B;
-    double *C;
+    double *A, *B *C;
     
     cudaHostAlloc((void **)&A, size,cudaHostAllocDefault);
     cudaHostAlloc((void **)&B, size,cudaHostAllocDefault);
@@ -69,10 +68,13 @@ int main(int argc, char const *argv[])
        // cudaMemcpyAsync(d_C , C ,size, cudaMemcpyHostToDevice, streams[i]);
         cublasDgemm(handle,CUBLAS_OP_N,CUBLAS_OP_N,N,N,N,&alpha,d_A,N,d_B,N,&beta,d_C,N);
         cudaMemcpyAsync(C, d_C ,size, cudaMemcpyDeviceToHost, streams[i]);
+        cudaStreamSynchronize (streams[i]);
        
     }
+
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
+
     float elapsedTime;
     cudaEventElapsedTime(&elapsedTime, start, stop);
     
@@ -91,7 +93,7 @@ int main(int argc, char const *argv[])
     }
 
     // print elapsed time
-    printf("cudaEventElapsedTime(%.6f)\n", elapsedTime / 1000.0f);
+    printf("%d %d% .6f %g \n",N, num_streams, elapsedTime / 1000.0f, num_streams * 2e-9 * N*N*N /(elapsedTime / 1000.0f));
     //print(C,5);
 
     //Free CPU memory 
@@ -106,7 +108,6 @@ int main(int argc, char const *argv[])
 
     return 0;
 }
-
 
 // print results of the array
 void print(double *C, int size )
