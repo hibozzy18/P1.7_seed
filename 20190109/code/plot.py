@@ -16,19 +16,19 @@ def get_cols(filename):
             values = [float(s) for s in line.split()]
             n.append(values[0])
             t.append(values[1])
-            flot.append(values[2])
+            flot.append(values[2]/1.18564e+9)
     return n, t, flot
 
 def plot_time(n,  t, plt1, output):
     plt1.figure(1, clear=True)
     plt1.subplot(111)
-   # plt1.plot(n, t, '-b', label='Time/us')
-    err = 0.1 + 0.2*np.sqrt(t)
-    plt1.errorbar(n, t, yerr=err,label='Time/us')
+    plt1.plot(n, t, '-b', label='Time/s')
+    #err = 0.1 + 0.2*np.sqrt(t)
+    #plt1.errorbar(n, t, yerr=err,label='Time/us')
     plt1.suptitle("Time")
     plt1.legend()
     plt1.xlabel('N')
-    plt1.ylabel('time(us)')
+    plt1.ylabel('time(s)')
     plt.tight_layout()
     plt1.savefig(output)
 

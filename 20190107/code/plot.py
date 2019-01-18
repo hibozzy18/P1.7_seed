@@ -14,7 +14,7 @@ def get_cols(filename):
             values = [float(s) for s in line.split()]
             n.append(values[0])
             t.append(values[2])
-            flot.append(values[3])
+            flot.append(values[3]/1.18564e+9)
     return n, t, flot
 
 def plot_time(n,  t, plt1 , output):
@@ -40,9 +40,7 @@ def plot_pperfomance(n,  t, plt1, output):
     plt.tight_layout()
     plt1.savefig(output)
   
-
-
-
+  
 n,t,f = get_cols('../data/time.dat')
 plot_time(n, t, plt, '../img/time.png')
-plot_pperfomance(n, f, plt, '../img/time2.png')
+plot_pperfomance(n, f, plt, '../img/perfomance.png')

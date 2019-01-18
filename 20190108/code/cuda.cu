@@ -1,16 +1,18 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include <cuda_runtime.h>
+#include "cublas_v2.h"
 
 // print to check  array 
-void check(int dim, int* A, int* B, int* C, int* D, int* E );
-void check_mult(int size, int* A, int* B, int* E );
+void check(int dim, double* A, double* B, double* C, double* D, double* E );
+void check_mult(int size, double* A, double* B, double* E );
 
 //Implement the matmul method on GPU
 __global__ void matmul(double *d_A, double *d_B, double *d_E, int size)
 {
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
     if(idx < size)
-    E[idx] = A[idx] * B[idx];
+    d_E[idx] = d_A[idx] * d_B[idx];
 }
 
 // implement the AddArray on GPU
@@ -18,7 +20,7 @@ __global__ void Addarray(double *d_E, double *d_C, double *d_D, int size)
 {
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
     if(idx < size);
-    D[idx] = C[idx] + E[idx];
+    d_D[idx] = d_C[idx] + d_E[idx];
 }
 
 int main(int argc, char *argv[])
@@ -30,11 +32,12 @@ int main(int argc, char *argv[])
     double *A, *B, *E, *C, *D;
 
     //Declare variables 
-    int size_bytes, NUM_BLOCKS, NUM_THREADS, N;
-    size_bytes = size * sizeof(double);
+    int size_bytes, N;
     
     //initialize
     N = atoi(argv[1]);
+
+    size_bytes = N* N * sizeof(double);
     const int NUM_THREADS = 32;
     const int NUM_BLOCKS = ( N + (NUM_THREADS-1) ) / NUM_THREADS;
 
@@ -50,25 +53,28 @@ int main(int argc, char *argv[])
     //cudaEventCreateWithFlags(&e3, cudaEventDisableTiming);
     
     //Allocate GPU memory 
-    cudaMalloc((void**)&d_A, size_bytes);
-    cudaMalloc((void**)&d_B, size_bytes);
-    cudaMalloc((void**)&d_C, size_bytes);
-    cudaMalloc((void**)&d_D, size_bytes);
-    cudaMalloc((void**)&d_E, size_bytes);
+    cudaMalloc((void **)&d_A, size_bytes);
+    cudaMalloc((void **)&d_B, size_bytes);
+    cudaMalloc((void **)&d_C, size_bytes);
+    cudaMalloc((void **)&d_D, size_bytes);
+    cudaMalloc((void **)&d_E, size_bytes);
 
     //Allocate host memory
-    cudaHostAlloc((void **)&A, size_bytes),cudaHostAllocDefault);
-    cudaHostAlloc((void **)&B, size_bytes),cudaHostAllocDefault);
-    cudaHostAlloc((void **)&C, size_bytes),cudaHostAllocDefault);
-    cudaHostAlloc((void **)&D, size_bytes),cudaHostAllocDefault);
-    cudaHostAlloc((void **)&E, size_bytes),cudaHostAllocDefault);
+    cudaHostAlloc((void **)&A, size_bytes,cudaHostAllocDefault);
+    cudaHostAlloc((void **)&B, size_bytes,cudaHostAllocDefault);
+    cudaHostAlloc((void **)&C, size_bytes,cudaHostAllocDefault);
+    cudaHostAlloc((void **)&D, size_bytes,cudaHostAllocDefault);
+    cudaHostAlloc((void **)&E, size_bytes,cudaHostAllocDefault);
 
     //initialize A,B,C 
-    for(int i=0; i<size; i++)
+    for (int i = 0; i < N; ++i)
     {
-        A[i] = 1.0;
-        B[i] = 1.0;
-        C[i] = 1.0;
+        for (int j = 0; j < N; ++j)
+        {
+          A[i + j*N] = 0.5;
+          B[i + j*N] = 0.25;
+          C[i + j*N] = 0.0;
+        }
     }
 
     //load A and B from CPU to GPU S1
@@ -76,7 +82,7 @@ int main(int argc, char *argv[])
     cudaMemcpyAsync(d_B,B,size_bytes,cudaMemcpyHostToDevice, stream1);
     cudaEventRecord(e1,stream1);
 
-    // Multiply S1
+    // Multiply  using S1
     matmul<<<NUM_BLOCKS, NUM_THREADS, 0, stream1>>>(d_A,d_B,d_E,N);
     cudaEventRecord(e2,stream1);
 
@@ -98,7 +104,7 @@ int main(int argc, char *argv[])
     cudaMemcpyAsync(D,d_D,size_bytes,cudaMemcpyDeviceToHost, stream2);
 
     //print the array to check the correctness  
-    check( N, A, B, C, D, E );
+   // check( N, A, B, C, D, E );
 
     //free memory from GPU and CPU
     cudaFreeHost(A); cudaFree(d_A);
@@ -114,13 +120,12 @@ int main(int argc, char *argv[])
     //destroy Events
     cudaEventDestroy(e1);
     cudaEventDestroy(e2);
-    cudaEventDestroy(e3);
 
     return 0;
 }
 
 //verify correctness of multiplication
-void check_mult(int size, int* A, int* B, int* E )
+void check_mult(int size, double* A, double* B, double* E )
 {
 	int i, e;
 	for (i = 0; i < size; ++i)
@@ -128,15 +133,16 @@ void check_mult(int size, int* A, int* B, int* E )
 		e = A[i]*B[i];
         if(E[i] != e) 
         {
-            printf("Wrong results"); 
+            printf("Wrong results \n"); 
             return;
         }
     }
-    printf("Results are correct");
+    printf("Results are correct \n");
 	return;
 }
 
-void check(int size, int* A, int* B, int* C, int* D, int* E )
+
+void check(int size, double* A, double* B, double* C, double* D, double* E )
 {
 	int i, e, d;
 	for (i = 0; i < size; ++i)
@@ -145,15 +151,15 @@ void check(int size, int* A, int* B, int* C, int* D, int* E )
 		d = e + C[i];
         if(E[i] != e) 
         {
-            printf("Wrong results"); 
+            printf("Wrong results \n"); 
             return;
         }
         if(D[i] != d) 
         {
-            printf("wrong results"); 
+            printf("wrong results \n"); 
             return;
         }
     }
-    printf("Results are correct");
+    printf("Results are correct \n");
 	return;
 }

@@ -4,6 +4,7 @@
 #include <omp.h>
 #endif
 
+// multiplication 
 void matrix_multiply(double *C, double *A, double *B, int N) {
   int i, j, k;
 #pragma omp for collapse(2) private(i,j,k)
@@ -16,6 +17,7 @@ void matrix_multiply(double *C, double *A, double *B, int N) {
 
 int main(int argc, char *argv[]) 
 {
+  // declare variables
   int i, j, numthreads;
   int N,num_size;
   double *A, *B, *C, t;
@@ -28,10 +30,12 @@ int main(int argc, char *argv[])
   N = atoi(argv[1]);
   num_size = N * N * sizeof(double);
 
+  // Allocate memory 
   A = (double *)malloc(num_size);
   B = (double *)malloc(num_size);
   C = (double *)malloc(num_size);
 
+  //initialize array
   for (i = 0; i < N; ++i)
     for (j = 0; j < N; ++j) {
       A[i + j*N] = 0.5;
@@ -39,7 +43,7 @@ int main(int argc, char *argv[])
       C[i +j * N] = 0.0;
     }
 
-  t =- omp_get_wtime();
+t =- omp_get_wtime();
 #pragma omp parallel
 {
   numthreads = omp_get_num_threads();
@@ -47,7 +51,8 @@ int main(int argc, char *argv[])
 }
   t += omp_get_wtime();
 
-  printf("%d %d %g %g \n", N, numthreads, t, 2.0 * N * N * N / t);
+//print time
+printf("%d %d %g %g \n", N, numthreads, t, 2.0 * N * N * N / t);
 
   return 0;
 }
