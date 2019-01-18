@@ -1,8 +1,8 @@
 # Herbert Nguruwe
 ## AddArray and Multmul on GPU's using streams 
 
-In this exercise I implemented multiplication of two matrices and added the third matrix to the answer. All calulcations were done  on the GPU node, data was transfered using streams. The result of the two matrices was copied to the CPU and addition was done. 
+In this exercise I implemented multiplication of two matrices and added the third matrix to the answer. All calulcations were done  on the GPU node, data was transfered using streams. The result of the two matrices was copied to the CPU and addition was done. The code of the exercise can be found [here] (code/cuda.cu) 
 
 I initialized the 3(A,B,C) matrices on the host and I copied 2 (A and B) matrices to GPU to be computed and started the  multiplication of the matcies. once the application was done transport the second matrices, the GPU started commputing while the CPU was sending data of the the C matrix.I created an event to check the status of matMul function. In the sence that once completed. I would transfer the intermediate results from the GPU to CPU. 
 
-When I am transfering data I will start the addition of matrices (E+C) in the GPU. I have checked the correctness of matrix E and it works.
+When I am transfering data I will start the addition of matrices (E+C) in the GPU. I have checked the correctness of matrix E and it works. 

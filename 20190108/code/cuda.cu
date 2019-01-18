@@ -1,9 +1,9 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-// print to check printed array 
-
-printArray(double * Array);
+// print to check  array 
+void check(int dim, int* A, int* B, int* C, int* D, int* E );
+void check_mult(int size, int* A, int* B, int* E );
 
 //Implement the matmul method on GPU
 __global__ void matmul(double *d_A, double *d_B, double *d_E, int size)
@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     double *d_A, *d_B, *d_E, *d_C, *d_D;
 
     //declare CPU variables
-    double A, B, E, C, D;
+    double *A, *B, *E, *C, *D;
 
     //Declare variables 
     int size_bytes, NUM_BLOCKS, NUM_THREADS, N;
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     //initialize
     N = atoi(argv[1]);
     const int NUM_THREADS = 32;
-    const int NUM_BLOCKS = ( N + (N-1) ) / NUM_THREADS;
+    const int NUM_BLOCKS = ( N + (NUM_THREADS-1) ) / NUM_THREADS;
 
     //create Streams
     cudaStream_t stream1, stream2;
@@ -44,10 +44,10 @@ int main(int argc, char *argv[])
     cudaStreamCreate( &stream2);
 
     //create Events
-    cudaEvent_t e1,e2,e3;
+    cudaEvent_t e1,e2;
     cudaEventCreateWithFlags(&e1, cudaEventDisableTiming);
     cudaEventCreateWithFlags(&e2, cudaEventDisableTiming);
-    cudaEventCreateWithFlags(&e3, cudaEventDisableTiming);
+    //cudaEventCreateWithFlags(&e3, cudaEventDisableTiming);
     
     //Allocate GPU memory 
     cudaMalloc((void**)&d_A, size_bytes);
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     cudaEventRecord(e1,stream1);
 
     // Multiply S1
-    matmul<<<NUM_BLOCKS, NUM_THREADS, 0, stream1>>>(d_A,d_B,d_E);
+    matmul<<<NUM_BLOCKS, NUM_THREADS, 0, stream1>>>(d_A,d_B,d_E,N);
     cudaEventRecord(e2,stream1);
 
     //load C from CPU to GPU using  S2
@@ -86,19 +86,19 @@ int main(int argc, char *argv[])
 
     //Add E to C S2
     cudaStreamWaitEvent( stream2 , e2 , 0);
-    Addarray<<<NUM_BLOCKS, NUM_THREADS,0, stream2>>>(d_E,d_C,d_D);
+    Addarray<<<NUM_BLOCKS, NUM_THREADS,0, stream2>>>(d_E,d_C,d_D, N);
 
     //Load E from GPU to CPU S1
     cudaMemcpyAsync(E,d_E,size_bytes,cudaMemcpyDeviceToHost, stream1);
 
     //print the array to check the correctness
-    printArray(E);
+    check_mult(N, A, B, E );
 
     //load D to CPU from GPU using S2
     cudaMemcpyAsync(D,d_D,size_bytes,cudaMemcpyDeviceToHost, stream2);
 
     //print the array to check the correctness  
-    printArray(D);
+    check( N, A, B, C, D, E );
 
     //free memory from GPU and CPU
     cudaFreeHost(A); cudaFree(d_A);
@@ -116,14 +116,44 @@ int main(int argc, char *argv[])
     cudaEventDestroy(e2);
     cudaEventDestroy(e3);
 
-    return 0
+    return 0;
 }
 
 //verify correctness of multiplication
-printArray(double * Array)
+void check_mult(int size, int* A, int* B, int* E )
 {
-    for(int i =0; i<size; i++)
-    {
-        printf("%d", Array[i])
+	int i, e;
+	for (i = 0; i < size; ++i)
+	{
+		e = A[i]*B[i];
+        if(E[i] != e) 
+        {
+            printf("Wrong results"); 
+            return;
+        }
     }
+    printf("Results are correct");
+	return;
+}
+
+void check(int size, int* A, int* B, int* C, int* D, int* E )
+{
+	int i, e, d;
+	for (i = 0; i < size; ++i)
+	{
+		e = A[i]*B[i];
+		d = e + C[i];
+        if(E[i] != e) 
+        {
+            printf("Wrong results"); 
+            return;
+        }
+        if(D[i] != d) 
+        {
+            printf("wrong results"); 
+            return;
+        }
+    }
+    printf("Results are correct");
+	return;
 }

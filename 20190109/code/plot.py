@@ -20,6 +20,7 @@ def get_cols(filename):
     return n, t, flot
 
 def plot_time(n,  t, plt1, output):
+    plt1.figure(1, clear=True)
     plt1.subplot(111)
    # plt1.plot(n, t, '-b', label='Time/us')
     err = 0.1 + 0.2*np.sqrt(t)
@@ -35,9 +36,10 @@ n, t, f = get_cols('../data/time.dat')
 plot_time(n, t, plt, '../img/time.png')
     
 def plot_pperfomance(n,  t, plt1, output):
+    plt1.figure(2, clear=True)
     plt1.subplot(111)
-    plt1.plot(n, t, '-r', label='Peak Performance')
-    plt1.suptitle("Peak Perfomance")
+    plt1.plot(n, t, '-r', label='Performance')
+    plt1.suptitle("Perfomance")
     plt1.legend()
     plt1.xlabel('N')
     plt1.ylabel('Gflops/s')
@@ -45,4 +47,4 @@ def plot_pperfomance(n,  t, plt1, output):
     plt1.savefig(output)
     
 
-plot_pperfomance(n, f, plt2, '../img/time2.png')
+plot_pperfomance(n, f, plt2, '../img/perfomance.png')
