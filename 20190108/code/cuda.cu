@@ -1,27 +1,25 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-# define NUM_THREADS 16 
-# define NUM_BLOCKS  8
-
 // print to check printed array 
 
 printArray(double * Array);
 
-__global__ void matmul(double *d_A, double *d_B, double *d_E)
+//Implement the matmul method on GPU
+__global__ void matmul(double *d_A, double *d_B, double *d_E, int size)
 {
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
     if(idx < size)
     E[idx] = A[idx] * B[idx];
 }
 
-__global__ void Addarray(double *d_E, double *d_C, double *d_D)
+// implement the AddArray on GPU
+__global__ void Addarray(double *d_E, double *d_C, double *d_D, int size)
 {
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
-    if(idx < size)
+    if(idx < size);
     D[idx] = C[idx] + E[idx];
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -31,15 +29,14 @@ int main(int argc, char *argv[])
     //declare CPU variables
     double A, B, E, C, D;
 
-    //
-    cudaDeviceProp prop;
-    int dev_id;
-    cudaGetDevice( &dev_id );
-    cudaGetDeviceProperties( &prop, dev_id );
-    if (0 == prop.deviceOverlap) 
-    {
-         fprintf(stderr, "No handle overlap support");
-    }
+    //Declare variables 
+    int size_bytes, NUM_BLOCKS, NUM_THREADS, N;
+    size_bytes = size * sizeof(double);
+    
+    //initialize
+    N = atoi(argv[1]);
+    const int NUM_THREADS = 32;
+    const int NUM_BLOCKS = ( N + (N-1) ) / NUM_THREADS;
 
     //create Streams
     cudaStream_t stream1, stream2;
@@ -53,18 +50,18 @@ int main(int argc, char *argv[])
     cudaEventCreateWithFlags(&e3, cudaEventDisableTiming);
     
     //Allocate GPU memory 
-    cudaMalloc((void**)&d_A, size * sizeof(double));
-    cudaMalloc((void**)&d_B, size * sizeof(double));
-    cudaMalloc((void**)&d_C, size * sizeof(double));
-    cudaMalloc((void**)&d_D, size * sizeof(double));
-    cudaMalloc((void**)&d_E, size * sizeof(double));
+    cudaMalloc((void**)&d_A, size_bytes);
+    cudaMalloc((void**)&d_B, size_bytes);
+    cudaMalloc((void**)&d_C, size_bytes);
+    cudaMalloc((void**)&d_D, size_bytes);
+    cudaMalloc((void**)&d_E, size_bytes);
 
     //Allocate host memory
-    cudaHostAlloc((void **)&A, size * sizeof(double)),cudaHostAllocDefault);
-    cudaHostAlloc((void **)&B, size * sizeof(double)),cudaHostAllocDefault);
-    cudaHostAlloc((void **)&C, size * sizeof(double)),cudaHostAllocDefault);
-    cudaHostAlloc((void **)&D, size * sizeof(double)),cudaHostAllocDefault);
-    cudaHostAlloc((void **)&E, size * sizeof(double)),cudaHostAllocDefault);
+    cudaHostAlloc((void **)&A, size_bytes),cudaHostAllocDefault);
+    cudaHostAlloc((void **)&B, size_bytes),cudaHostAllocDefault);
+    cudaHostAlloc((void **)&C, size_bytes),cudaHostAllocDefault);
+    cudaHostAlloc((void **)&D, size_bytes),cudaHostAllocDefault);
+    cudaHostAlloc((void **)&E, size_bytes),cudaHostAllocDefault);
 
     //initialize A,B,C 
     for(int i=0; i<size; i++)
@@ -75,8 +72,8 @@ int main(int argc, char *argv[])
     }
 
     //load A and B from CPU to GPU S1
-    cudaMemcpyAsync(d_A,A,size*sizeof(double),cudaMemcpyHostToDevice, stream1);
-    cudaMemcpyAsync(d_B,B,size*sizeof(double),cudaMemcpyHostToDevice, stream1);
+    cudaMemcpyAsync(d_A,A,size_bytes,cudaMemcpyHostToDevice, stream1);
+    cudaMemcpyAsync(d_B,B,size_bytes,cudaMemcpyHostToDevice, stream1);
     cudaEventRecord(e1,stream1);
 
     // Multiply S1
@@ -85,20 +82,20 @@ int main(int argc, char *argv[])
 
     //load C from CPU to GPU using  S2
     cudaStreamWaitEvent( stream2 , e1 , 0);
-    cudaMemcpyAsync(d_C,C,size*sizeof(double),cudaMemcpyHostToDevice, stream2);
+    cudaMemcpyAsync(d_C,C,size_bytes,cudaMemcpyHostToDevice, stream2);
 
     //Add E to C S2
     cudaStreamWaitEvent( stream2 , e2 , 0);
     Addarray<<<NUM_BLOCKS, NUM_THREADS,0, stream2>>>(d_E,d_C,d_D);
 
     //Load E from GPU to CPU S1
-    cudaMemcpyAsync(E,d_E,size*sizeof(double),cudaMemcpyDeviceToHost, stream1);
+    cudaMemcpyAsync(E,d_E,size_bytes,cudaMemcpyDeviceToHost, stream1);
 
     //print the array to check the correctness
     printArray(E);
 
     //load D to CPU from GPU using S2
-    cudaMemcpyAsync(D,d_D,size*sizeof(double),cudaMemcpyDeviceToHost, stream2);
+    cudaMemcpyAsync(D,d_D,size_bytes,cudaMemcpyDeviceToHost, stream2);
 
     //print the array to check the correctness  
     printArray(D);

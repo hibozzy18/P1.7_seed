@@ -1,9 +1,11 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<magma.h>
-//include this folder /u/shared/programs/x86_64/magma/1.6.1/intel/14.0/mkl/11.1/cudatoolkit/6.5/include
 #include<magmablas.h>
+#include<cuda_runtime.h>
 
+
+void print_list(double * C, int n_loc, int N);
 
 int main(int argc, char  *argv[])
 {
@@ -12,117 +14,104 @@ int main(int argc, char  *argv[])
         fprintf(stderr,"Wrong usage please eneter the number N");
         exit(0);
     }
-    size_t N, size;
 
+    //get value of N
+    size_t N, size;
     N = atoi(argv[1]);
 
-    printf("%d \n", N);
-    //create and initializa arrays 
+    //declare arrays 
     double *A,*B,*C;
-    //void **pA, **pB, **pC;
-
     double *d_A, *d_B, *d_C;
-    //double **pd_A, **pd_B, **pd_C;
+    float t, t_total;
     
     //size of matrix 
     size = N*N*sizeof(double);
 
-    //pointer to pointer
-    // pA = &A; pB = &B; pC = &C;
+    // declare create event
+    cudaEvent_t start, stop;
+    cudaEvent_t start_perf, stop_perf;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventCreate(&start_perf);
+    cudaEventCreate(&stop_perf);
 
+    //initialize magma
     magma_init();
-
-    // reg malloc
-   /* A = (double *)malloc(size);
-    B = (double *)malloc(size);
-    C = (double *)malloc(size);*/
 
     //allocate CPU matrices
     magma_malloc_cpu((void **)&A, size);
     magma_malloc_cpu((void **)&B, size);
     magma_malloc_cpu((void **)&C, size);
-
-    //set queue
-    //magma_queue_t queue
-    //magma_queue_create(0, &queue);
+ 
 
     //allocate GPU matrices
     magma_malloc((void **)&d_A, size);
     magma_malloc((void **)&d_B, size);
     magma_malloc((void **)&d_C, size);
 
-    //cudaMalloc((void **)&d_A, size);
-    //cudaMalloc((void **)&d_B, size);
-    //cudaMalloc((void **)&d_C, size);
-
-    // initialize the array
-     
+    //initialize the arrays
      for(size_t i = 0; i < N*N; i++)
      {
-        A[i] = (double) rand();
-        B[i] = (double) rand();
+        A[i] = 1;
+        B[i] = 1;
         C[i] = 0;
      }
+
+     //start recording
+     cudaEventRecord(start, 0);
+
+     //copy matricies from GPU to CPU
+     magma_setmatrix(N, N, sizeof(double), A, N, d_A, N);
+     magma_setmatrix(N, N, sizeof(double), B, N, d_B, N);
+
      
+     //record computational time only
+     cudaEventRecord(start_perf, 0);
+     //Compute in GPU
+     magma_dgemm(MagmaNoTrans, MagmaNoTrans, N, N, N, 1.0, d_A, N, d_B, N, 1.0, d_C, N);
+     cudaEventRecord(stop_perf, 0);
+     //Copy Results back from the GPU to CPU
+     magma_getmatrix(N, N, sizeof(double), d_C, N, C, N);
+    
+    //stop the recording
+     cudaEventRecord(stop, 0);
+     cudaEventSynchronize(stop);
 
-    //copy matrciess from GPU to CPU
-    magma_setmatrix(N, N, size, A, N, d_A, N);
-    magma_setmatrix(N, N, size, B, N, d_B, N);
+     //get elapsed time  
+     cudaEventElapsedTime(&t, start, stop);
+     cudaEventElapsedTime(&t_total, start_perf, stop_perf);
 
-    //magma_setmatrix(m, n, elemSize, hA_src, lda, dB_dst, lddb);
-
-
-    //Compute in GPU
-    /*
-    magmablas_dgemm(
-        magma_trans_t transA, magma_trans_t transB,
-        magma_int_t m, magma_int_t n, magma_int_t k,
-        double alpha,
-        magmaDouble_const_ptr dA, magma_int_t ldda,
-        magmaDouble_const_ptr dB, magma_int_t lddb,
-        double beta,
-        magmaDouble_ptr dC, magma_int_t lddc);
-        */
-
-    magma_dgemm(MagmaNoTrans, MagmaNoTrans, N, N, N, -1.0, d_A, N, d_B, N, 1.0, d_C, N);
-
-    //Copy Results back from the GPU to CPU
-    magma_getmatrix(N, N, size, d_C, N, C, N);
+     //convert time to seconds
+    t = t/100.0f;
+    t_total = t_total / 100.0f;
+    printf("%d %g %g %g %g\n", N, t, 2.0 * N * N * N / t, t_total, 2.0 * N * N * N / t_total);
 
     //Print results
-    /*
-    for(size_t i = 0; i < 2; i++)
-    {
-        
-        for(size_t j = 2; j < N; j++)
-        {
-            printf("%g \t", C[i*N + j]);
-        }
-        
-        printf("\n");
-    }
-    */
+    // print_list(C,5, N);
 
     //free CPU memory
     magma_free_cpu(A);
     magma_free_cpu(B);
     magma_free_cpu(C);
 
-    //free
-    /*free(A);
-    free(B);
-    free(C);*/
-
     //Free GPU memory 
     magma_free(d_A);
     magma_free(d_B);
     magma_free(d_C);
-    /*
-    cudaFree(d_A);
-    cudaFree(d_B);
-    cudaFree(d_C);*/
-
+   
     magma_finalize();
 
     return 0;
+}
+
+//print portion of matrix
+void print_list(double *C, int n_loc, int N){
+    for (size_t j = 0; j < n_loc; j++)
+    {
+        for (size_t i = 0; i < n_loc; i++)
+        {
+            printf("%g \t", C[j * N + i]);
+        }
+        printf("\n");
+    }
 }

@@ -24,7 +24,7 @@ send:
 	rsync -vrh  --progress  --exclude '*.exe' . uly:/home/hnguruwe/magma_matmul/
 
 recv:
-	rsync -vrh  --progress --include  '*.dat'   uly:/home/hnguruwe/magma_matmul/data/ 
+	rsync -vrh  --progress --include  '*.dat'   uly:/home/hnguruwe/magma_matmul/ .
 
 plot:
 	@python plot.py
@@ -32,5 +32,3 @@ plot:
 .PHONY: clean run plot send recv
 
 
-
-gcc magma_dgemm.c -o exe -O3 -I/u/shared/programs/x86_64/magma/1.6.1/intel/14.0/mkl/11.1/cudatoolkit/6.5/include/ -std=c99 

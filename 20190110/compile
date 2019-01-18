@@ -1,0 +1,1 @@
+gcc magma_dgemm.c -o exe -O3 -I/u/shared/programs/x86_64/magma/1.6.1/intel/14.0/mkl/11.1/cudatoolkit/6.5/include/  -L /u/shared/programs/x86_64/magma/1.6.1/intel/14.0/mkl/11.1/cudatoolkit/6.5/lib/ -lmagma -std=c99 
